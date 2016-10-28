@@ -20,7 +20,7 @@ public class MethodTraverseFootPrint {
         }
     }
 
-    public Set<GeneralVariable> instantialize(List<Local> args, boolean isStatic) {
+    public Set<Symbol> instantialize(List<Local> args, boolean isStatic) {
         int start = isStatic? 1 : 0;
         ArrayList<Local> newArgs = new ArrayList<>(args.size() + start);
         if (isStatic) {
@@ -30,7 +30,7 @@ public class MethodTraverseFootPrint {
         return instantialize(newArgs);
     }
 
-    public Set<GeneralVariable> instantialize(ArrayList<Local> args) {
+    public Set<Symbol> instantialize(ArrayList<Local> args) {
         return data.values().stream().map(i -> i.instantialize(args.get(i.pos)))
                 .collect(Collectors.toSet());
     }
