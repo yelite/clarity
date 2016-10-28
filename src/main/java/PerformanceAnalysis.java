@@ -21,13 +21,12 @@ public class PerformanceAnalysis extends SceneTransformer {
 
         List<String> args = new LinkedList<>(Arrays.asList(argv));
 
-        String javaHome = "/Library/Java/JavaVirtualMachines/jdk1.7.0_79.jdk/Contents/Home/jre";
-        String classPath = String.format("%s/lib/rt.jar:%s/lib/jce.jar", javaHome, javaHome);
+        String classPath = "";
         Iterator<String> iter = args.iterator();
         while (iter.hasNext()) {
             if (iter.next().equals("-cp")) {
                 iter.remove();
-                classPath += ":" + iter.next();
+                classPath = iter.next();
                 iter.remove();
             }
         }
