@@ -9,6 +9,7 @@ import vasco.ProgramRepresentation;
 import vasco.soot.DefaultJimpleRepresentation;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -46,6 +47,31 @@ public class FootPrintAnalysis extends BackwardInterProceduralAnalysis<SootMetho
     @Override
     public FootPrintFlowSet topValue() {
         return new FootPrintFlowSet();
+    }
+
+    @Override
+    protected void computeOutFlow(Context<SootMethod, Unit, FootPrintFlowSet> currentContext, Unit node) {
+        List<Unit> successors = currentContext.getControlFlowGraph().getSuccsOf(node);
+        SootMethod method = currentContext.getMethod();
+        if (successors.size() != 0) {
+            FootPrintFlowSet out = topValue();
+            for (Unit succ : successors) {
+                FootPrintFlowSet succIn = currentContext.getValueBefore(succ);
+
+                assert (succ instanceof Stmt);
+                Loop headerLoop = methodSummary.getLoopFromHeader(method, (Stmt) succ);
+                Loop exitLoop = methodSummary.getLoopFromExit(method, (Stmt) node);
+
+                if (headerLoop != null && headerLoop.getLoopStatements().contains(node)) {
+                    out = meet(out, succIn.copyWithExitingLoop());
+                } else if (exitLoop != null && exitLoop.getLoopStatements().contains(succ)) {
+                    out = meet(out, succIn.copyWithEnteringLoop(exitLoop));
+                } else {
+                    out = meet(out, succIn);
+                }
+            }
+            currentContext.setValueAfter(node, out);
+        }
     }
 
     @Override

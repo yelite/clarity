@@ -79,18 +79,7 @@ public abstract class BackwardInterProceduralAnalysis<M,N,A> extends InterProced
 
 			if (node != null) {
 				// Compute the OUT data flow value (only for non-exit units).
-				List<N> successors = currentContext.getControlFlowGraph().getSuccsOf(node);
-				if (successors.size() != 0) {
-					// Initialise to the TOP value
-					A out = topValue();					
-					// Merge IN values of all successors
-					for (N succ : successors) {
-						A succIn = currentContext.getValueBefore(succ);
-						out = meet(out, succIn);
-					}					
-					// Set the OUT value at the node to the result
-					currentContext.setValueAfter(node, out);
-				}
+				computeOutFlow(currentContext, node);
 				
 				// Store the value of IN before the flow function is processed.
 				A prevIn = currentContext.getValueBefore(node);
@@ -239,6 +228,21 @@ public abstract class BackwardInterProceduralAnalysis<M,N,A> extends InterProced
 				}
 			}			
 		}
+	}
+
+	protected void computeOutFlow(Context<M, N, A> currentContext, N node) {
+		List<N> successors = currentContext.getControlFlowGraph().getSuccsOf(node);
+		if (successors.size() != 0) {
+            // Initialise to the TOP value
+            A out = topValue();
+            // Merge IN values of all successors
+            for (N succ : successors) {
+                A succIn = currentContext.getValueBefore(succ);
+                out = meet(out, succIn);
+            }
+            // Set the OUT value at the node to the result
+            currentContext.setValueAfter(node, out);
+        }
 	}
 
 	/**

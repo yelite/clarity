@@ -47,13 +47,15 @@ public class FootPrintFlowSet {
     }
 
     public FootPrintFlowSet copyWithExitingLoop() {
-        if (!this.loopTrap.inLoop()) {
-            System.err.println("Exiting a loop without entering any");
-        }
-
         FootPrintSet loopTraverseFP = this.loopTrap.traverseFP;
         FootPrintSet loopReadFP = this.loopTrap.readFP;
-        FootPrintFlowSet result = new FootPrintFlowSet(this.loopTrap.previous);
+        FootPrintFlowSet result;
+
+        if (this.loopTrap.inLoop()) {
+            result = new FootPrintFlowSet(this.loopTrap.previous.copy());
+        } else {
+            result = new FootPrintFlowSet(this.loopTrap.copy());
+        }
 
         result.traverseFP.addAll(this.traverseFP.difference(loopTraverseFP));
         result.traverseFP.fillFrom(loopReadFP);

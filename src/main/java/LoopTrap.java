@@ -29,7 +29,7 @@ public class LoopTrap {
     }
 
     public boolean inLoop() {
-        return this.loop != null;
+        return this.previous != null;
     }
 
     public LoopTrap copy() {
