@@ -188,11 +188,7 @@ public class Symbol {
 
     @Override
     public int hashCode() {
-        if (hash == 0) {
-            Object[] f = fields.toArray(new Object[fields.size()]);
-            hash = Objects.hash(variable.getName(), f);
-        }
-        return hash;
+        return Objects.hash(variable.getName(), fields);
     }
 
     @Override

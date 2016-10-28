@@ -22,6 +22,7 @@ public class FootPrintAnalysis extends BackwardInterProceduralAnalysis<SootMetho
     public FootPrintAnalysis(MethodSummary methodSummary) {
         super();
         this.methodSummary = methodSummary;
+        this.verbose = true;
     }
 
     @Override
@@ -63,8 +64,14 @@ public class FootPrintAnalysis extends BackwardInterProceduralAnalysis<SootMetho
                 Loop exitLoop = methodSummary.getLoopFromExit(method, (Stmt) node);
 
                 if (headerLoop != null && headerLoop.getLoopStatements().contains(node)) {
+                    if (verbose) {
+                        System.out.println("[EXIT] X" + currentContext + " -> L " + succ);
+                    }
                     out = meet(out, succIn.copyWithExitingLoop());
                 } else if (exitLoop != null && exitLoop.getLoopStatements().contains(succ)) {
+                    if (verbose) {
+                        System.out.println("[ENTER] X" + currentContext + " -> L " + node);
+                    }
                     out = meet(out, succIn.copyWithEnteringLoop(exitLoop));
                 } else {
                     out = meet(out, succIn);
@@ -78,20 +85,8 @@ public class FootPrintAnalysis extends BackwardInterProceduralAnalysis<SootMetho
     public FootPrintFlowSet normalFlowFunction(Context<SootMethod, Unit, FootPrintFlowSet> context, Unit node, FootPrintFlowSet outValue) {
         assert (node instanceof Stmt);
         Stmt stmt = (Stmt) node;
-        SootMethod method = context.getMethod();
 
-        Loop headerLoop = methodSummary.getLoopFromHeader(method, stmt);
-        Loop exitLoop = methodSummary.getLoopFromExit(method, stmt);
-        FootPrintFlowSet in;
-
-        assert(headerLoop == null || exitLoop == null);
-        if (headerLoop != null) {
-            in = outValue.copyWithExitingLoop();
-        } else if (exitLoop != null) {
-            in = outValue.copyWithEnteringLoop(exitLoop);
-        } else {
-            in = outValue.copy();
-        }
+        FootPrintFlowSet in = outValue.copy();
 
         if (stmt instanceof AssignStmt) {
             AssignStmt assignStmt = (AssignStmt) stmt;
