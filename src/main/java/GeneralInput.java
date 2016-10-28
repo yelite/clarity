@@ -1,6 +1,4 @@
-import javafx.util.Pair;
 import soot.Local;
-import soot.SootField;
 
 import java.util.List;
 
@@ -28,11 +26,11 @@ public class GeneralInput {
         return (this.fields == null);
     }
 
-    public GeneralVariable instantialize(Local l) {
+    public Symbol instantialize(Local l) {
         if (this.isPure()) {
-            return new GeneralVariable(l);
+            return new Symbol(l);
         } else {
-            return new GeneralVariable(l, fields);
+            return new Symbol(l);
         }
     }
 }
