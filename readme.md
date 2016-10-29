@@ -1,3 +1,7 @@
+This is a redundant traversal bugs detection tool. The idea is from the paper
+[Static Detection of Asymptotic Performance Bugs in Collection Traversals](https://www.cs.utexas.edu/~lin/papers/pldi15.pdf).
+Code is built on [Soot](https://github.com/Sable/soot) and [VASCO](https://github.com/rohanpadhye/vasco).
+
 Build
 =====
 ```
@@ -25,4 +29,12 @@ Limitation
 - There is only alias analysis for local variables in backward order. It is unable to reason alias
 relationship between object fields, like whether `r0.b.c` and `r1.c` alias. This produces more
 false positives than the implementation in paper.
+
+
+Thoughts
+========
+If we can get precise context-sensitive point-to information, it seems this analysis can be done in
+forward flow, using heap objects instead of variable names in the footprint set. This avoids
+renaming variables in the footprint set at call sites and probably enables the detection of traversal
+on recursive data structure.
 
