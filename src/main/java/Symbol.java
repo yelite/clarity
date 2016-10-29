@@ -14,8 +14,9 @@ import java.util.*;
  * Created by yelite on 2016/10/24.
  */
 public class Symbol {
-    // global variable as static namespace
-    static public final Local global = new JimpleLocal("@Global", Scene.v().getObjectType());
+    // globalValue variable as static namespace
+    static public final Local globalValue = new JimpleLocal("@Global", Scene.v().getObjectType());
+    static public final Symbol returnSymbol = new Symbol(new JimpleLocal("@Return", Scene.v().getObjectType()));
 
     public final Local variable;
     private final LinkedList<GeneralField> fields = new LinkedList<>();
@@ -49,9 +50,9 @@ public class Symbol {
         else if (value instanceof StaticFieldRef) {
             StaticFieldRef ref = (StaticFieldRef) value;
 
-            String field = ref.getField().getName() + ref.getField().getType();
+            String field = ref.getField().getName() + "@" + ref.getField().getDeclaringClass();
 
-            return new Symbol(global, new Field(field));
+            return new Symbol(globalValue, new Field(field));
         }
         else if (value instanceof InstanceFieldRef)
         {
@@ -184,6 +185,11 @@ public class Symbol {
         }
 
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return this.variable.toString() + "." + fields.toString();
     }
 
     @Override

@@ -70,8 +70,8 @@ public class FootPrintSet {
         return result;
     }
 
-    public void add(Symbol s) {
-        this.symbolSet.add(s);
+    public boolean add(Symbol s) {
+        return this.symbolSet.add(s);
     }
 
     public void addAll(Collection<Symbol> other) {
@@ -134,7 +134,7 @@ public class FootPrintSet {
 
             String field = ref.getField().getName() + ref.getField().getType();
 
-            subsituteShortField(Symbol.global, new Field(field), newSymbol);
+            subsituteShortField(Symbol.globalValue, new Field(field), newSymbol);
         }
         else if (oldValue instanceof InstanceFieldRef)
         {

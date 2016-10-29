@@ -17,12 +17,11 @@ import java.util.Map;
  */
 public class FootPrintAnalysis extends BackwardInterProceduralAnalysis<SootMethod, Unit, FootPrintFlowSet> {
     private final MethodSummary methodSummary;
-    private static final Local returnLocal = new JimpleLocal("@return", IntType.v());
 
     public FootPrintAnalysis(MethodSummary methodSummary) {
         super();
         this.methodSummary = methodSummary;
-        this.verbose = true;
+        this.verbose = false;
     }
 
     @Override
@@ -62,20 +61,24 @@ public class FootPrintAnalysis extends BackwardInterProceduralAnalysis<SootMetho
                 assert (succ instanceof Stmt);
                 Loop headerLoop = methodSummary.getLoopFromHeader(method, (Stmt) succ);
                 Loop exitLoop = methodSummary.getLoopFromExit(method, (Stmt) node);
+                boolean exit = (headerLoop != null && !headerLoop.getLoopStatements().contains(node));
+                boolean enter = (exitLoop != null && !exitLoop.getLoopStatements().contains(succ));
 
-                if (headerLoop != null && headerLoop.getLoopStatements().contains(node)) {
-                    if (verbose) {
-                        System.out.println("[EXIT] X" + currentContext + " -> L " + succ);
+                if (exit) {
+                    if (true) {
+                        System.out.println("[EXIT] X" + currentContext.getMethod() + " -> L " + succ);
                     }
-                    out = meet(out, succIn.copyWithExitingLoop());
-                } else if (exitLoop != null && exitLoop.getLoopStatements().contains(succ)) {
-                    if (verbose) {
-                        System.out.println("[ENTER] X" + currentContext + " -> L " + node);
-                    }
-                    out = meet(out, succIn.copyWithEnteringLoop(exitLoop));
-                } else {
-                    out = meet(out, succIn);
+                    succIn = succIn.copyWithExitingLoop();
                 }
+
+                if (enter) {
+                    if (true) {
+                        System.out.println("[ENTER] X" + currentContext.getMethod() + " -> L " + node);
+                    }
+                    succIn = succIn.copyWithEnteringLoop(exitLoop);
+                }
+
+                out = meet(out, succIn);
             }
             currentContext.setValueAfter(node, out);
         }
@@ -94,6 +97,13 @@ public class FootPrintAnalysis extends BackwardInterProceduralAnalysis<SootMetho
             Value rhsValue = assignStmt.getRightOpBox().getValue();
             Symbol lhsSymbol = Symbol.fromLimitedLocal(lhsValue);
 
+            if (rhsValue instanceof ConcreteRef || rhsValue instanceof Local) {
+                Symbol rhsSymbol = Symbol.fromLimitedLocal(rhsValue);
+                in.subsituteByValue(lhsValue, rhsSymbol);
+            } else if (rhsValue instanceof NewArrayExpr) {
+                in.addWriteFP(lhsSymbol);
+            }
+
             if (lhsValue instanceof ArrayRef) {
                 in.addWriteFP(new Symbol(lhsSymbol.variable));
             }
@@ -104,12 +114,11 @@ public class FootPrintAnalysis extends BackwardInterProceduralAnalysis<SootMetho
                     in.addReadFP(Symbol.fromLimitedLocal(ref.getBase()));
                 }
             }
-
-            if (rhsValue instanceof ConcreteRef || rhsValue instanceof Local) {
-                Symbol rhsSymbol = Symbol.fromLimitedLocal(rhsValue);
-                in.subsituteByValue(lhsValue, rhsSymbol);
-            } else if (rhsValue instanceof NewArrayExpr) {
-                in.addWriteFP(lhsSymbol);
+        } else if (stmt instanceof ReturnStmt) {
+            ReturnStmt returnStmt = (ReturnStmt) stmt;
+            if (returnStmt.getOp() instanceof Local) {
+                Local returnOp = (Local) returnStmt.getOp();
+                in.subsituteByValue(Symbol.returnSymbol.variable, Symbol.fromLimitedLocal(returnOp));
             }
         }
 
@@ -118,7 +127,6 @@ public class FootPrintAnalysis extends BackwardInterProceduralAnalysis<SootMetho
 
     @Override
     public FootPrintFlowSet callEntryFlowFunction(Context<SootMethod, Unit, FootPrintFlowSet> context, SootMethod targetMethod, Unit node, FootPrintFlowSet entryValue) {
-        FootPrintFlowSet out = entryValue.copy();
         Map<Integer, Local> paraMap = methodSummary.getParameterMapping(targetMethod);
         InvokeExpr exp;
 
@@ -131,23 +139,7 @@ public class FootPrintAnalysis extends BackwardInterProceduralAnalysis<SootMetho
             exp = ((InvokeStmt) node).getInvokeExpr();
         }
 
-        if (exp instanceof InstanceInvokeExpr) {
-            Value base = ((InstanceInvokeExpr) exp).getBase();
-            assert (base instanceof Local);
-            out.subsituteByValue(
-                    paraMap.get(MethodSummary.receiver),
-                    Symbol.fromLimitedLocal(base)
-            );
-        }
-
-        for (int i = 0; i < targetMethod.getParameterCount(); i++) {
-            Value arg = exp.getArg(i);
-            if (arg instanceof Local || arg instanceof ConcreteRef) {
-                out.subsituteByValue(paraMap.get(i), Symbol.fromLimitedLocal(arg));
-            }
-        }
-
-        return out;
+        return entryValue.copyWithExitingMethod(targetMethod, exp, paraMap);
     }
 
     @Override

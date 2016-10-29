@@ -62,17 +62,20 @@ public class PerformanceAnalysis extends SceneTransformer {
         fp.doAnalysis();
         DataFlowSolution<Unit, FootPrintFlowSet> solution = fp.getSolutionForUserCode();
 
+        System.out.println("\n\nAnalysis Result:\n");
         methodSummary.loopHeaders.entrySet().stream()
                 .filter(entry -> !entry.getKey().isJavaLibraryMethod())
                 .forEach(entry -> {
                     SootMethod method = entry.getKey();
                     entry.getValue().forEach((stmt, loop) -> {
-                        FootPrintFlowSet flow = solution.getValueAfter(stmt);
-                        if (!flow.check()) {
+                        FootPrintFlowSet flow = solution.getValueBefore(stmt);
+                        if (flow.checkProblem()) {
                             System.out.println(method + " has possible performance bug.");
                         }
                     });
                 });
+
+        System.out.println("\n");
     }
 
     private MethodSummary generateSummary() {
