@@ -5,57 +5,48 @@ import java.util.*;
  */
 
 
-class Container {
-    private HashMap[] item = new HashMap[3];
-
-    public HashMap getItem() {
-        return item[0];
-    }
-
-    public void setItem(HashMap v) {
-        this.item[0] = v;
-    }
-}
-
-
 class Example {
-    public int e = 1;
-
     public static void main(String[] argv) {
-        List<Integer> int_list = new LinkedList<Integer>();
-        for (int i = 0; i < 10; i++) {
-            int_list.add(i);
-        }
-
-        Example e = new Example();
-        e.computeMax(int_list);
-        for (int i : int_list) {
-            Integer max = e.computeMax(int_list);
-            int_list.add(e.e);
-        }
-
-        Container c1 = new Container();
-        Container c2 = new Container();
-        c2.setItem(c1.getItem());
+        testCase1();
+        testCase2();
+        testCase3();
     }
 
-    private Integer computeMax(Collection<Integer> c) {
-        if (c.isEmpty()) {
-            return null;
+    public static void testCase1() {
+        List<Integer> int_list = new ArrayList<>();
+
+        for (int i : int_list) {
+            Integer max = computeMaxIdx(int_list);
         }
+    }
 
-        Iterator<Integer> iter = c.iterator();
-        Integer max = Integer.MIN_VALUE;
+    public static void testCase2() {
+        // Cannot reason about recursive data structure
+        List<Integer> int_list = new LinkedList<>();
 
-        while (true) {
-            Integer i = iter.next();
-            if (i > max) {
+        for (int i : int_list) {
+            Integer max = computeMaxIdx(int_list);
+        }
+    }
+
+    public static void testCase3() {
+        ArrayList<Integer> int_list = new ArrayList<>();
+
+        for (int i : int_list) {
+            Integer max = computeMaxIdx(int_list);
+            // Write int_list so that the traversal is not redundant
+            int_list.add(1);
+        }
+    }
+
+    private static Integer computeMaxIdx(List<Integer> c) {
+        Integer max = 0;
+
+        for (int i = 0; i < c.size(); i++) {
+            if (c.get(i) > max) {
                 max = i;
                 break;
             }
-        }
-        while (max < 3) {
-            max = 3;
         }
 
         return max;
