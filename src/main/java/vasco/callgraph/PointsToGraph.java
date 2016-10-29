@@ -314,7 +314,7 @@ public class PointsToGraph {
 		} else {
 			// For classes, the fromClass (or one of its super-classes) and
 			// toClass have to be same.
-			if (fromClass.getName().equals(toClass.getName())) {
+			if (fromClass.equals(toClass)) {
 				return true;
 			} else if (fromClass.hasSuperclass()) {
 				return canCast(fromClass.getSuperclass(), toClass);
@@ -581,7 +581,7 @@ public class PointsToGraph {
 			Set<AnyNewExpr> oldTargets = oldEdges.get(field);
 			if (oldTargets == null) {
 				if (node == GLOBAL_SITE) {
-					// If the node is global, then field must be static
+					// If the node is globalValue, then field must be static
 					assert_tmp(field.isStatic());
 					// In that case, we allow this condition
 					oldTargets = new HashSet<AnyNewExpr>();
@@ -655,7 +655,7 @@ public class PointsToGraph {
 			// Check to see if this node had edges with the given field
 			if (oldTargets == null) {
 				if (node == GLOBAL_SITE) {
-					// If the node is global, then field must be static
+					// If the node is globalValue, then field must be static
 					assert_tmp(field.isStatic());
 					// In that case, we allow this condition
 					oldTargets = new HashSet<AnyNewExpr>();

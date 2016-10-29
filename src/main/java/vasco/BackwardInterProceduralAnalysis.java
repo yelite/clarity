@@ -94,13 +94,19 @@ public abstract class BackwardInterProceduralAnalysis<M,N,A> extends InterProced
 				A in;
 				
 				// Handle flow functions depending on whether this is a call statement or not
+				List<M> targets;
 				if (programRepresentation().isCall(node)) {
-					
+					targets = programRepresentation().resolveTargets(currentContext.getMethod(), node);
+				} else {
+					targets = new LinkedList<M>();
+				}
+
+				if (!targets.isEmpty()) {
 					in = topValue();
 					
 					boolean hit = false;
 					
-					for (M targetMethod : programRepresentation().resolveTargets(currentContext.getMethod(), node)) {
+					for (M targetMethod : targets) {
 						A exitValue = callExitFlowFunction(currentContext, targetMethod, node, out);
 						
 						CallSite<M,N,A> callSite = new CallSite<M,N,A>(currentContext, node);
