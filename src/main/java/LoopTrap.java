@@ -24,7 +24,7 @@ public class LoopTrap {
 
     public LoopTrap(Loop loop, LoopTrap previous) {
         this.loop = loop;
-        this.previous = previous;
+        this.previous = previous.copy();
         this.root = false;
     }
 
@@ -52,10 +52,6 @@ public class LoopTrap {
     public LoopTrap merge(LoopTrap other) {
         LoopTrap newTrap;
 
-        if (!this.root && !other.root) {
-            assert (this.loop == other.loop && this.previous == other.previous);
-        }
-
         if (!this.root) {
             newTrap = new LoopTrap(this.loop, this.previous);
         } else if (!other.root) {
@@ -63,8 +59,6 @@ public class LoopTrap {
         } else {
             newTrap = new LoopTrap();
         }
-
-        // only traps in the same loop and have same entry point can be merged
 
         newTrap.readFP.addAll(this.readFP.union(other.readFP));
         newTrap.traverseFP.addAll(this.traverseFP.union(other.traverseFP));
