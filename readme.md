@@ -19,7 +19,52 @@ for the runtime (jce.jar and rt.jar) should be passed to Soot. For example:
 java -cp ./build/classes/main PerformanceAnalysis -cp build/classes/test:/Library/Java/JavaVirtualMachines/jdk1.7.0_79.jdk/Contents/Home/jre/lib/rt.jar:/Library/Java/JavaVirtualMachines/jdk1.7.0_79.jdk/Contents/Home/jre/lib/jce.jar Example
 ```
 
-There is an `Example` class with performance issue in test files.
+For code like this,
+```Java
+public static void testCase1() {
+    List<Integer> int_list = new ArrayList<>();
+
+    for (int i : int_list) {
+        Integer max = computeMaxIdx(int_list);
+    }
+}
+
+public static void testCase2() {
+    // Cannot reason about recursive data structure
+    List<Integer> int_list = new LinkedList<>();
+
+    for (int i : int_list) {
+        Integer max = computeMaxIdx(int_list);
+    }
+}
+
+public static void testCase3() {
+    ArrayList<Integer> int_list = new ArrayList<>();
+
+    for (int i : int_list) {
+        Integer max = computeMaxIdx(int_list);
+        // Write int_list so that the traversal is not redundant
+        int_list.add(1);
+    }
+}
+
+private static Integer computeMaxIdx(List<Integer> c) {
+    Integer max = 0;
+
+    for (int i = 0; i < c.size(); i++) {
+        if (c.get(i) > max) {
+            max = i;
+            break;
+        }
+    }
+
+    return max;
+}
+```
+It will give a warning on `testCase1`
+```
+<Example: void testCase1()> has possible performance bug.
+```
 
 
 Limitation
